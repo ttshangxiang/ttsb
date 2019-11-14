@@ -3,6 +3,11 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
+import axios from 'axios';
+
+// 全局配置
+axios.defaults.baseURL = '/t2/xucaiyun';
+axios.defaults.headers['Content-Type'] = 'application/json';
 
 ReactDOM.render(<App />, document.getElementById('root'));
 

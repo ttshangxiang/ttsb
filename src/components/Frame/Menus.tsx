@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Menu, Icon } from 'antd';
-import { NavLink } from 'react-router-dom';
+import { NavLink, withRouter } from 'react-router-dom';
 
 const { SubMenu } = Menu;
 
@@ -40,34 +40,62 @@ const menus = [
   },
   {
     name: '资源',
-    path: '/resources'
+    sub: [
+      {
+        name: '内容',
+        path: '/resources'
+      },
+      {
+        name: '上传',
+        path: '/resources/upload'
+      },
+      {
+        name: '分组',
+        path: '/resources/group'
+      }
+    ]
   }
 ]
+
+interface props {
+  location: any;
+}
 
 interface state {
   selectedKeys: string[]
   openKeys: string[]
 }
 
-class Menus extends Component<{}, state> {
+class Menus extends Component<props, state> {
 
-  constructor (props: any) {
-    super(props);
-    this.state = {
-      selectedKeys: [],
-      openKeys: []
+  state: state = {
+    selectedKeys: [],
+    openKeys: []
+  }
+
+  componentDidUpdate(prevProps: any) {
+    const locationChanged =
+      this.props.location !== prevProps.location;
+    
+    if (locationChanged) {
+      this.setSelectedClass()
     }
   }
 
-  componentDidMount () {
+  setSelectedClass () {
     document.querySelectorAll('#jhq-menu a.aaa').forEach(item => {
       const key = item.getAttribute('data-key');
       const open = item.getAttribute('data-open');
       const obj: any = {}
       key && (obj.selectedKeys = [key]);
-      open && (obj.openKeys = [open].concat(this.state.openKeys));
+      open && !this.state.openKeys.includes(open)
+        && (obj.openKeys = [open].concat(this.state.openKeys));
       this.setState(obj);
     })
+  }
+
+  componentDidMount () {
+    this.setSelectedClass()
   }
 
   render() {
@@ -105,4 +133,4 @@ class Menus extends Component<{}, state> {
   }
 }
 
-export default Menus
+export default withRouter(Menus as any)

@@ -43,9 +43,9 @@ const columns = [
     key: 'action',
     render: (text: string, record: any) => (
       <span>
-        <button>Invite {record.name}</button>
+        <a>Invite {record.name}</a>
         <Divider type="vertical" />
-        <button>Delete</button>
+        <a>Delete</a>
       </span>
     ),
   },
