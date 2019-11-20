@@ -15,9 +15,7 @@ class App extends Component {
           <Route path='/' exact component={Home} />
           <Route path='/home' component={Home} />
           <Route path='/life' component={Life} />
-          <Route path='/artcles' component={Home} />
           <Route path='/comments' component={Home} />
-          <Route path='/albums' component={Home} />
           <Route path='/resources' exact component={Resources} />
           <Route path='/resources/upload' component={UploadRes} />
           <Route path='/resources/group' component={ResGroup} />

@@ -2,12 +2,13 @@ import React, { Component, Fragment } from 'react';
 import { Table, Divider, Tag, Button, Input, message } from 'antd';
 import { Link } from 'react-router-dom';
 import GroupSelect from './GroupSelect';
-import axios from 'axios'
-import { getGroups, group } from './ResGroup'
+import axios from 'axios';
+import { getGroups, group } from './ResGroup';
+import EditResModal from './EditResModal';
 
 const { Search } = Input;
 
-interface res {
+export interface res {
   _id: string;
   utime: string;
   ctime: string;
@@ -35,26 +36,27 @@ interface state {
   selectedRowKeys: string[];
   loading: boolean;
   groupMap: {[index: string]: group};
+  page: number;
 }
 
 class Resources extends Component<props, state> {
 
-  page: number = 1;
   pageSize: number = 10;
   total: number = 0;
   filterGroup: string = '';
   newGroup: string = '';
   keyWords: string = '';
   inChangeGroupId: string = '';
+  editResModal: (EditResModal|null) = null;
 
   columns = [
     {
       title: 'Thumb',
       dataIndex: 'thumb',
       key: 'thumb',
-      render: (src: string) => {
+      render: (src: string, record: res, index: number) => {
         if (src) {
-          return <img src={src} width={120} />
+          return <img src={src} width={120} style={{cursor: 'pointer'}} onClick={() => this.openEdit(record, index)}/>
         } else {
           return '-'
         }
@@ -64,7 +66,7 @@ class Resources extends Component<props, state> {
       title: 'Id',
       dataIndex: '_id',
       key: '_id',
-      render: (text: string) => <a>{text}</a>,
+      render: (text: string, record: res, index: number) => <a onClick={() => this.openEdit(record, index)}>{text}</a>,
     },
     {
       title: 'Filename',
@@ -94,7 +96,7 @@ class Resources extends Component<props, state> {
             {(tags || []).map(tag => {
               return (
                 <Tag key={tag}>
-                  {this.state.groupMap[tag].name}
+                  {this.state.groupMap[tag] && this.state.groupMap[tag].name}
                 </Tag>
               );
             })}
@@ -117,11 +119,12 @@ class Resources extends Component<props, state> {
     resList: [],
     selectedRowKeys: [],
     loading: false,
-    groupMap: {}
+    groupMap: {},
+    page: 1
   };
 
   async loadRes (page = 1) {
-    this.page = page;
+    this.setState({page});
     this.setState({loading: true});
     const params: any = {
       offset: (page - 1) * this.pageSize,
@@ -184,7 +187,7 @@ class Resources extends Component<props, state> {
     });
     const id = this.inChangeGroupId
     if (!id) {
-      message.error('请先新建组');
+      message.error('请选分组');
       return;
     }
     // 没在组里面，添加的
@@ -203,12 +206,17 @@ class Resources extends Component<props, state> {
       }
     })
 
+    if (adds.length + subs.length == 0) {
+      message.info('未作改变')
+      return;
+    }
+
     await axios({
       method: 'put',
       url: '/res/group/' + id,
       data: {adds, subs}
     });
-    await this.reloadRes(this.page);
+    await this.reloadRes(this.state.page);
   }
 
   onRowSelectChange = (selectedRowKeys: any) => {
@@ -228,6 +236,37 @@ class Resources extends Component<props, state> {
   onNewSelectChange (value: string) {
     this.inChangeGroupId = value;
     this.resetSelectd(this.state.resList)
+  }
+
+  editIndex: number = 0;
+  async changCurrent (num: number) {
+    const index = this.editIndex + num;
+    const page = this.state.page;
+    const total = this.total;
+    const pageSize = this.pageSize;
+    const windex = (page - 1) * pageSize + index;
+    // 临界
+    if (windex < 0) {
+      message.info('翻到顶了')
+    } else if (windex > total - 1) {
+      message.info('翻到底了')      
+    } else if (index < 0 || index > pageSize - 1) {
+      // 翻页
+      await this.reloadRes(this.state.page + num);
+      setTimeout(() => {
+        const new_index = (index + pageSize) % pageSize;
+        this.editResModal && this.editResModal.showEdit(this.state.resList[new_index])
+        this.editIndex = new_index;
+      }, 10);
+    } else {
+      this.editResModal && this.editResModal.showEdit(this.state.resList[index])
+      this.editIndex = index;
+    }
+  }
+
+  openEdit (record: res, index: number) {
+    this.editIndex = index;
+    this.editResModal && this.editResModal.showEdit(record)
   }
 
   async componentDidMount () {
@@ -255,7 +294,7 @@ class Resources extends Component<props, state> {
           onSearch={value => { this.keyWords = value; this.reloadRes(); }}
           style={{ marginLeft: 8, width: 200 }}></Search>
         <Button style={{ marginLeft: 8, marginRight: 8 }} onClick={() => this.startChangeGroup()}>
-          { this.state.inChangeGroup ? '取消修改' : '修改分组' }
+          { this.state.inChangeGroup ? '放弃修改' : '修改分组' }
         </Button>
         { this.state.inChangeGroup ? 
         <Fragment>
@@ -268,6 +307,7 @@ class Resources extends Component<props, state> {
           <Table rowSelection={rowSelection} columns={this.columns} dataSource={this.state.resList} rowKey="_id"
             loading={loading}
             pagination={{
+              current: this.state.page,
               hideOnSinglePage: true,
               showSizeChanger: true,
               defaultPageSize: this.pageSize,
@@ -284,6 +324,10 @@ class Resources extends Component<props, state> {
               }
             }} />
           </div>
+          <EditResModal ref={ins => this.editResModal = ins}
+            reloadList={() => this.reloadRes()}
+            changeCurrent={(num: number) => this.changCurrent(num)}
+            ></EditResModal>
       </div>
     );
   }

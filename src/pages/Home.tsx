@@ -4,7 +4,7 @@ class Home extends Component {
 
   render() {
     return (
-      <div>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/>cao<br/></div>
+      <div>摆设</div>
     );
   }
 }

@@ -27,16 +27,8 @@ const menus = [
     ]
   },
   {
-    name: '文章',
-    path: '/articles'
-  },
-  {
     name: '评论',
     path: '/comments'
-  },
-  {
-    name: '相册',
-    path: '/albums'
   },
   {
     name: '资源',
